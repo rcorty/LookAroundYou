@@ -1,0 +1,12 @@
+name: LookAroundYou
+title: LookAroundYou
+username:
+account: rcorty
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1087995
+bundleId: 2353998
+url: https://rcorty.shinyapps.io/LookAroundYou/
+when: 1566758910.93063
+asMultiple: FALSE
+asStatic: FALSE
