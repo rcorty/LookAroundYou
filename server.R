@@ -128,6 +128,16 @@ plot_graph <- function(g) {
 server <- function(input, output) {
     
     # initialization
+    showModal(modalDialog(title = 'Look Around You', size = 'l',
+                          HTML('You start at spot 1. Your goal is to get to the GOAL.<br><br>',
+                               'You can INVESTIATE and MOVE.<br><br>',
+                               'MOVE changes where you are.',
+                               'You must move foreward (never backward) and each MOVE costs one point<br><br>',
+                               'INVESTIGATE shows you where you can go from a given spot.',
+                               'You can INVESTIGATE the spot where you are or any spot ahead of you.',
+                               'The cost to INVESTIGATE a spot is your distance to that spot + 1'),
+                          easyClose = TRUE, footer = NULL))
+    
     g <- reactiveVal(
         make_empty_graph(directed = TRUE) %>%
             add_vertices(nv = 1, depth = 0L, x = 0, y = 0, 
