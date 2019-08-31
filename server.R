@@ -4,7 +4,7 @@ library(igraph)
 library(shinyalert)
 
 vertex_df <- function(g) {
-    as_data_frame(x = g, what = 'vertices') %>% 
+    as_data_frame(x = g, what = 'vertices') %>%
         mutate(vidx = 1:n())
 }
 
@@ -26,18 +26,18 @@ has_won <- function(g) {
 }
 
 investigate <- function(g, vidx) {
-    
-    if (!(vidx %in% V(g))) 
+
+    if (!(vidx %in% V(g)))
         stop('Tried to add children to absent parent.')
-    
+
     x <- vertex_attr(graph = g, name = 'x', index = vidx)
     y <- vertex_attr(graph = g, name = 'y', index = vidx)
     depth <- vertex_attr(graph = g, name = 'depth', index = vidx)
-    
+
     num_children <- sample(x = 1:5, size = 1)
     new_spots <- simulate_spots(n = num_children, x = x, y = y)
-    g %>% 
-        set_vertex_attr(name = 'investigated', index = vidx, value = TRUE) %>% 
+    g %>%
+        set_vertex_attr(name = 'investigated', index = vidx, value = TRUE) %>%
         add_vertices(
             nv = num_children,
             depth = depth + 1,
@@ -45,7 +45,7 @@ investigate <- function(g, vidx) {
             y = new_spots$y,
             current = FALSE,
             investigated = FALSE
-        ) %>% 
+        ) %>%
         add_edges(
             # slightly hacky way to interleave ("riffle") two vectors
             c(rbind(vidx, tail(V(.), num_children)))
@@ -68,39 +68,39 @@ cost_to_investigate <- function(g, vidx) {
 }
 
 move <- function(g, to_vidx) {
-    
-    if (!(to_vidx %in% V(g))) 
+
+    if (!(to_vidx %in% V(g)))
         stop('Tried to move to a non-existent node.')
-    
+
     from_vidx <- current_vidx(g)
-    
+
     # check for edge between from_vertex and to_vertex
     if (nrow(filter(edge_df(g = g), from == from_vidx, to == to_vidx)) != 1L)
         stop('Error -- no edge between from_vertex and to_vertex')
-    
+
     # if we got this far, go ahead and make the 'move'
-    g %>% 
-        set_vertex_attr(name = 'current', index = from_vidx, value = FALSE) %>% 
+    g %>%
+        set_vertex_attr(name = 'current', index = from_vidx, value = FALSE) %>%
         set_vertex_attr(name = 'current', index = to_vidx, value = TRUE)
 }
 
 plot_graph <- function(g) {
-    
-    vs <- as_data_frame(x = g, what = 'vertices') %>% 
+
+    vs <- as_data_frame(x = g, what = 'vertices') %>%
         mutate(vidx = as.integer(V(g)))
-    
+
     current_depth <- vs$depth[current_vidx(g)]
-    
-    es <- as_data_frame(x = g, what = 'edges') %>% 
+
+    es <- as_data_frame(x = g, what = 'edges') %>%
         mutate(from_x = vs$x[from],
                to_x = vs$x[to],
                from_y = vs$y[from],
                to_y = vs$y[to])
-    
+
     ggplot(data = vs) +
-        annotate(geom = 'rect', xmin = 10, xmax = 12, ymin = -5, ymax = 5, 
+        annotate(geom = 'rect', xmin = 10, xmax = 12, ymin = -5, ymax = 5,
                  color = 'black', fill = 'gray') +
-        annotate(geom = 'text', x = 11, y = 0, label = 'GOAL', angle = -90, 
+        annotate(geom = 'text', x = 11, y = 0, label = 'GOAL', angle = -90,
                  size = 20, color = 'red') +
         geom_segment(data = es,
                      mapping = aes(x = from_x, xend = to_x,
@@ -126,7 +126,7 @@ plot_graph <- function(g) {
 }
 
 server <- function(input, output) {
-    
+
     # initialization
     showModal(modalDialog(title = 'Look Around You', size = 'l',
                           HTML('You start at spot 1. Your goal is to get to the GOAL.<br><br>',
@@ -137,10 +137,10 @@ server <- function(input, output) {
                                'You can INVESTIGATE the spot where you are or any spot ahead of you.',
                                'The cost to INVESTIGATE a spot is your distance to that spot + 1'),
                           easyClose = TRUE, footer = NULL))
-    
+
     g <- reactiveVal(
         make_empty_graph(directed = TRUE) %>%
-            add_vertices(nv = 1, depth = 0L, x = 0, y = 0, 
+            add_vertices(nv = 1, depth = 0L, x = 0, y = 0,
                          current = TRUE, investigated = FALSE)
     )
     points <- reactiveVal(100L)
@@ -148,29 +148,29 @@ server <- function(input, output) {
     # MOVE
     # reactive UI
     output$move_vidxs <- renderUI(expr = {
-        
-        children <- neighbors(graph = g(), 
-                              v = current_vidx(g()), 
+
+        children <- neighbors(graph = g(),
+                              v = current_vidx(g()),
                               mode = 'out')
-        
+
         selectInput(inputId = 'move_vidx',
                     label = NULL,
                     choices = children,
                     multiple = FALSE)
     })
-    
+
     # change the graph in response to move
     observeEvent(
         eventExpr = input$move,
         handlerExpr = g(move(g = g(), to_vidx = input$move_vidx))
     )
-    
+
     # update point total in response to move
     observeEvent(
         eventExpr = input$move,
         handlerExpr = points(points() - 1L)
     )
-    
+
     # check for win
     observeEvent(
         eventExpr = input$move,
@@ -182,40 +182,40 @@ server <- function(input, output) {
         },
         ignoreInit = TRUE
     )
-    
+
     # INVESTIGATE
     # reactive UI
     output$investigate_vidxs <- renderUI(expr = {
-        
-        n <- as.integer(neighborhood(graph = g(), 
-                                     order = 10, 
-                                     nodes = current_vidx(g()), 
+
+        n <- as.integer(neighborhood(graph = g(),
+                                     order = 10,
+                                     nodes = current_vidx(g()),
                                      mode = 'out')[[1]])
-        
-        vertex_df(g = g()) %>% 
-            slice(n) %>% 
-            filter(!investigated) %>% 
+
+        vertex_df(g = g()) %>%
+            slice(n) %>%
+            filter(!investigated) %>%
             pull(vidx) ->
             available
-        
+
         selectInput(inputId = 'investigate_vidx',
                     label = NULL,
                     choices = available,
                     multiple = FALSE)
     })
-    
+
     # based on investigation, add nodes to g
     observeEvent(
         eventExpr = input$investigate,
         handlerExpr = g(investigate(g = g(), vidx = input$investigate_vidx))
     )
-    
+
     # based on investigation, deduct points
     observeEvent(
         eventExpr = input$investigate,
         handlerExpr = points(points() - cost_to_investigate(g = g(), vidx = input$investigate_vidx))
     )
-    
+
     # render output
     output$the_plot <- renderPlot(plot_graph(g()))
     output$points_remaining <- renderText(points())
