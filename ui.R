@@ -1,38 +1,33 @@
-ui <- fluidPage(
+fluidPage(
     title = 'Look Around You',
-    tags$head(includeHTML(path = 'google-analytics.html')),
+    tags$head(includeHTML('www/google-analytics.html')),
     titlePanel('Look Around You'),
-    fluidPage(
-        # column(
-        #     width = 2L,
-        #     fluidRow(
-        #         uiOutput(outputId = 'investigate_vidxs', inline = TRUE),
-        #         actionButton(inputId = 'investigate', label = 'Investigate', width = '40%', inline = TRUE)
-        #     )
-        # ),
+    fluidRow(
         column(
-            width = 1L,
-            br(), br(),
-            uiOutput(outputId = 'investigate_vidxs'),
-            br(), br(),
-            uiOutput(outputId = 'move_vidxs'),
-            br(), br(),
+            width = 1,
+            brs(2),
+            selectInput('investigate_vidx', NULL, choices = NULL),
+            brs(2),
+            selectInput('move_vidx', NULL, choices = NULL),
+            brs(2),
             'Points remaining:'
         ),
         column(
-            width = 1L,
-            br(), br(),
-            actionButton(inputId = 'investigate', label = 'Investigate'),
-            br(), br(), br(), br(),
-            actionButton(inputId = 'move', label = 'Move'),
-            br(), br(), br(), br(),
-            textOutput(outputId = 'points_remaining')
+            width = 1,
+            brs(2),
+            actionButton('investigate', 'Investigate'),
+            brs(4),
+            actionButton('move', 'Move'),
+            brs(4),
+            textOutput('points_remaining')
         ),
         column(
-            width = 9L,
-            plotOutput(outputId = 'the_plot',
-                       width = '100%',
-                       height = '800px')
+            width = 9,
+            plotOutput(
+                'plot',
+                width = '100%',
+                height = '800px'
+            )
         )
     )
 )
